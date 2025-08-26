@@ -1,0 +1,62 @@
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: leanrag_qdrant
+    ports:
+      - "6333:6333"  # REST API
+      - "6334:6334"  # gRPC API (optional)
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    environment:
+      # Configure Qdrant settings
+      QDRANT__LOG_LEVEL: INFO
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+      # Enable CORS for web interface
+      QDRANT__SERVICE__ENABLE_CORS: true
+      # Memory optimization
+      QDRANT__STORAGE__WRITE_CONSISTENCY_FACTOR: 1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - leanrag
+
+  mysql:
+    image: mysql:8.0
+    container_name: leanrag_mysql
+    ports:
+      - "4321:3306"  # Map container port 3306 to host port 4321
+    environment:
+      MYSQL_ROOT_PASSWORD: "123"
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+      # Optional: create a default database
+      # MYSQL_DATABASE: leanrag
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./schema/mysql:/docker-entrypoint-initdb.d  # For initialization scripts
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p123"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - leanrag
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql_data:
+    name: leanrag_mysql_data
+
+networks:
+  leanrag:
+    driver: bridge
+    name: leanrag_network

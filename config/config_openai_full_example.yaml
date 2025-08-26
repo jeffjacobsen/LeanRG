@@ -1,0 +1,91 @@
+# Full OpenAI Configuration (LLM + Embedding)
+llm_conf:
+  # API Provider: Use OpenAI
+  api_provider: "openai"
+  llm_url: "https://api.openai.com/v1"
+  llm_api_key: "your-openai-api-key-here"
+  
+  # OpenAI Models (as of 2024)
+  # - gpt-4o: Latest GPT-4 Omni model
+  # - gpt-4-turbo: Fast GPT-4 variant
+  # - gpt-3.5-turbo: Cost-effective option
+  llm_model: "gpt-4o"
+  
+  # OpenAI settings
+  max_concurrent: 5
+  timeout: 120
+  max_retries: 3
+  
+  # Rate limiting (OpenAI typically allows ~1M TPM)
+  enable_rate_limiting: true
+  rate_limit_tpm: 800000
+  
+  # HTTP logging control
+  verbose_http_logs: false
+
+# Embedding Configuration
+embedding_conf:
+  # Use OpenAI for embeddings
+  provider: "openai"
+  model: "text-embedding-3-small"
+  base_url: "https://api.openai.com/v1"
+  api_key: "your-openai-api-key-here"
+
+# Model Parameters  
+model_params:
+  embedding_dim: 1536  # text-embedding-3-small
+  max_token_size: 8192
+
+# Database Configuration
+database:
+  backend: "mysql"  # Local MySQL + Qdrant setup
+  log_query_times: true
+  enable_parallel_operations: true
+
+# Qdrant Configuration
+qdrant_conf:
+  host: "localhost"
+  port: 6333
+  timeout: 30
+
+# MySQL Configuration
+mysql_conf:
+  host: "localhost"
+  port: 4321
+  user: "root"
+  password: "123"
+  charset: "utf8mb4"
+  autocommit: true
+  connect_timeout: 10
+
+# Supabase Configuration (backup option)
+supabase_conf:
+  url: "https://your-project.supabase.co"
+  key: "your-supabase-anon-key-here"
+  service_key: "your-supabase-service-key-here"
+  max_connections: 10
+  timeout: 30
+  retry_attempts: 3
+
+# GraphExtraction Configuration  
+graphextraction_conf:
+  chunk_file: "datasets/chunks/cs_chunk.json"
+  output_dir: "data"
+  entity_extract_max_gleaning: 1
+  separate_extraction: true
+
+# Deal Triple Configuration
+deal_triple_conf:
+  token_threshold: 50
+  enable_summarization: true
+  max_concurrent_summarization: 5
+
+# Build Graph Configuration
+build_graph_conf:
+  working_dir: "."
+  topk: 10
+
+# Query Configuration
+query_conf:
+  topk: 5
+  level_mode: 3

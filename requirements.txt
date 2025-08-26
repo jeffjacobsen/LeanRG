@@ -1,0 +1,30 @@
+# LeanRAG Clean Dependencies
+# Generated automatically - only includes packages actually used
+
+# Core Scientific Computing
+numpy==2.2.6
+pandas==2.3.1
+matplotlib==3.10.5
+seaborn==0.13.2
+networkx==3.4.2
+scikit-learn==1.7.0
+scipy==1.16.0
+umap-learn==0.5.9.post2
+
+# AI/ML APIs and Processing
+tiktoken==0.9.0
+openai==1.93.0
+jieba==0.42.1
+fastembed==0.7.2
+
+# Database Connections
+PyMySQL==1.1.1
+supabase==2.16.0
+qdrant-client==1.13.3
+
+# Utilities
+requests==2.32.4
+aiohttp==3.12.14
+tqdm==4.67.1
+PyYAML==6.0.2
+streamlit==1.47.0

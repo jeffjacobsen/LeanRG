@@ -1,0 +1,91 @@
+# Lambda Labs LLM + OpenAI Embedding Configuration
+llm_conf:
+  # API Provider: Use Lambda Labs
+  api_provider: "lambda"
+  llm_url: "https://api.lambdalabs.com/v1"
+  llm_api_key: "your-lambda-api-key-here"
+  
+  # Lambda Labs Models (as of 2024)
+  # - hermes-3-llama-3.1-405b: High-quality large model
+  # - llama-3.1-405b-instruct-fp8: Fast inference optimized
+  # - llama-3.1-70b-instruct: Balanced performance/cost
+  llm_model: "hermes-3-llama-3.1-405b"
+  
+  # Concurrency settings for clustering stability
+  max_concurrent: 5
+  timeout: 120
+  max_retries: 3
+  
+  # Rate limiting (Lambda Labs typically allows higher TPM)
+  enable_rate_limiting: true
+  rate_limit_tpm: 500000
+  
+  # HTTP logging control
+  verbose_http_logs: false
+
+# Embedding Configuration
+embedding_conf:
+  # Use OpenAI for high-quality embeddings
+  provider: "openai"
+  model: "text-embedding-3-small"
+  base_url: "https://api.openai.com/v1"
+  api_key: "your-openai-api-key-here"
+
+# Model Parameters  
+model_params:
+  embedding_dim: 1536  # text-embedding-3-small
+  max_token_size: 8192
+
+# Database Configuration
+database:
+  backend: "mysql"  # Local MySQL + Qdrant setup
+  log_query_times: true
+  enable_parallel_operations: true
+
+# Qdrant Configuration
+qdrant_conf:
+  host: "localhost"
+  port: 6333
+  timeout: 30
+
+# MySQL Configuration
+mysql_conf:
+  host: "localhost"
+  port: 4321
+  user: "root"
+  password: "123"
+  charset: "utf8mb4"
+  autocommit: true
+  connect_timeout: 10
+
+# Supabase Configuration (backup option)
+supabase_conf:
+  url: "https://your-project.supabase.co"
+  key: "your-supabase-anon-key-here"
+  service_key: "your-supabase-service-key-here"
+  max_connections: 10
+  timeout: 30
+  retry_attempts: 3
+
+# GraphExtraction Configuration  
+graphextraction_conf:
+  chunk_file: "datasets/chunks/cs_chunk.json"
+  output_dir: "data"
+  entity_extract_max_gleaning: 1
+  separate_extraction: true
+
+# Deal Triple Configuration
+deal_triple_conf:
+  token_threshold: 50
+  enable_summarization: true
+  max_concurrent_summarization: 5
+
+# Build Graph Configuration
+build_graph_conf:
+  working_dir: "."
+  topk: 10
+
+# Query Configuration
+query_conf:
+  topk: 5
+  level_mode: 3

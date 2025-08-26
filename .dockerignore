@@ -1,0 +1,34 @@
+# Ignore unnecessary files for Docker context
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.coverage
+*.egg-info/
+dist/
+build/
+
+# Data directories
+ge_data/
+logs/
+qdrant_data/
+
+# Config files with secrets
+config.yaml
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files  
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore

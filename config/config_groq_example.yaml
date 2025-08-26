@@ -1,0 +1,93 @@
+# Groq LLM + OpenAI Embedding Configuration (Ultra-fast inference)
+llm_conf:
+  # API Provider: Use Groq
+  api_provider: "groq"
+  llm_url: "https://api.groq.com/openai/v1"
+  llm_api_key: "your-groq-api-key-here"
+  
+  # Groq Models (as of 2024)
+  # - llama3-8b-8192: Llama 3 8B with 8K context
+  # - llama3-70b-8192: Llama 3 70B with 8K context  
+  # - mixtral-8x7b-32768: Mixtral 8x7B with 32K context
+  # - gemma-7b-it: Gemma 7B Instruct
+  llm_model: "llama3-70b-8192"
+  
+  # Reduced concurrency for clustering stability
+  max_concurrent: 5
+  # Fast response times with Groq
+  timeout: 60
+  max_retries: 3
+  
+  # Rate limiting (tokens per minute) - Groq free tier: 250K TPM
+  enable_rate_limiting: true
+  rate_limit_tpm: 200000  # Conservative limit for stability
+  
+  # HTTP logging control
+  verbose_http_logs: false
+
+# Embedding Configuration
+embedding_conf:
+  # Use OpenAI for high-quality embeddings
+  provider: "openai"
+  model: "text-embedding-3-small"
+  base_url: "https://api.openai.com/v1"
+  api_key: "your-openai-api-key-here"
+
+# Model Parameters  
+model_params:
+  embedding_dim: 1536  # text-embedding-3-small
+  max_token_size: 8192
+
+# Database Configuration
+database:
+  backend: "mysql"  # Local MySQL + Qdrant setup
+  log_query_times: true
+  enable_parallel_operations: true
+
+# Qdrant Configuration
+qdrant_conf:
+  host: "localhost"
+  port: 6333
+  timeout: 30
+
+# MySQL Configuration
+mysql_conf:
+  host: "localhost"
+  port: 4321
+  user: "root"
+  password: "123"
+  charset: "utf8mb4"
+  autocommit: true
+  connect_timeout: 10
+
+# Supabase Configuration (backup option)
+supabase_conf:
+  url: "https://your-project.supabase.co"
+  key: "your-supabase-anon-key-here"
+  service_key: "your-supabase-service-key-here"
+  max_connections: 10
+  timeout: 30
+  retry_attempts: 3
+
+# GraphExtraction Configuration  
+graphextraction_conf:
+  chunk_file: "datasets/chunks/cs_chunk.json"
+  output_dir: "data"
+  entity_extract_max_gleaning: 1
+  separate_extraction: true
+
+# Deal Triple Configuration
+deal_triple_conf:
+  token_threshold: 50
+  enable_summarization: true
+  max_concurrent_summarization: 10  # Groq can handle more
+
+# Build Graph Configuration
+build_graph_conf:
+  working_dir: "."
+  topk: 10
+
+# Query Configuration
+query_conf:
+  topk: 5
+  level_mode: 3
