@@ -354,15 +354,11 @@ async def main():
         help="Path to configuration file"
     )
     parser.add_argument(
-        "--output-dir", "-o",
-        default="data",
-        help="Base output directory (default: data)"
-    )
-    parser.add_argument(
         "--working-dir", "-w",
-        help="Complete working directory path (overrides --output-dir)"
+        default="data",
+        help="Working directory (default: data)"
     )
-    
+
     args = parser.parse_args()
     
     # Load configuration
@@ -394,7 +390,7 @@ async def main():
         return 1
     
     # Load chunks using dataset prefix
-    chunk_file = f"datasets/chunks/{args.dataset_prefix}_chunk.json"
+    chunk_file = f"{args.working_dir}/{args.dataset_prefix}/chunk.json"
     try:
         chunks = get_chunks(chunk_file)
         logger.info(f"Loaded {len(chunks)} chunks from {chunk_file}")
@@ -403,10 +399,8 @@ async def main():
         return 1
     
     # Extract entities and relations
-    if args.working_dir:
-        output_dir = args.working_dir
-    else:
-        output_dir = f"{args.output_dir}/{args.dataset_prefix}"
+
+    output_dir = f"{args.working_dir}/{args.dataset_prefix}"
     
     start_time = time.time()
     try:

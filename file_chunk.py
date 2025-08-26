@@ -71,7 +71,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_dir", type=str, default="datasets/unique_contexts")
     parser.add_argument(
-        "-o", "--output_dir", type=str, default="datatest"
+        "-o", "--output_dir", type=str, default="data"
     )
     args = parser.parse_args()
 

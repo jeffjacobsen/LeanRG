@@ -281,8 +281,7 @@ Performs hierarchical retrieval starting from relevant entities and traversing u
 - `utils/`: Core utilities (clustering, database, LLM management, I/O)
 - `scripts/`: Database migration and benchmark scripts
 - `datasets/`: Benchmark datasets and evaluation results
-- `schema/`: Database schema files (Supabase SQL)
-- `pic/`: Architecture diagrams and performance charts
+
 
 ### Configuration Notes
 - All settings configured via single `config.yaml` file in root directory
@@ -362,7 +361,7 @@ docker compose restart qdrant
 **Pipeline Issues**:
 - Ensure output from one step exists before running the next step
 - Check file paths and directory permissions
-- Database connection issues usually indicate MySQL configuration problems in `database_utils.py`
+- Database connection issues usually indicate MySQL configuration problems in `utils/database_utils.py`
 
 **Performance Issues**:
 - Large documents may require adjusting chunk sizes in `file_chunk.py`
@@ -371,11 +370,11 @@ docker compose restart qdrant
 
 ### File Dependencies and Data Flow
 ```
-file_chunk.py → chunks.json (stored in datasets/chunks/)
+file_chunk.py → chunks.json (stored in data/{prefix})
         ↓
 process-chunk.py + deal_triple.py → data/{prefix}/entity.jsonl, relation.jsonl  
         ↓
-build_graph.py → Database storage (Supabase or ChromaDB+MySQL)
+build_graph.py → Database storage (ChromaDB+MySQL)
         ↓
 query_graph.py → final answers
 ```
@@ -383,8 +382,7 @@ query_graph.py → final answers
 ## Recent Changes
 
 ### Configuration Consolidation
-- **Single config file**: All settings now use `config.yaml` in root directory
-- **Removed**: Separate CommonKG and GraphExtraction config directories  
+- **Single config file**: All settings now use `config.yaml` in root directory 
 - **Simplified setup**: Just copy one example file and edit API keys
 
 ### API-First Architecture  
