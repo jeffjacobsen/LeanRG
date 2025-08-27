@@ -17,7 +17,7 @@ import tiktoken
 sys.path.append(str(Path(__file__).parent.parent))
 
 from prompt import PROMPTS
-from utils.file_and_instance_utils import read_jsonl, write_jsonl, create_if_not_exist
+from utils.file_utils import write_jsonl
 from utils.llm_manager import create_llm_manager
 import logging
 

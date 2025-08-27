@@ -10,6 +10,7 @@ import numpy as np
 import tiktoken
 import umap
 import copy
+import html
 import asyncio
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional
@@ -19,9 +20,9 @@ import warnings
 from tqdm import tqdm
 from collections import Counter, defaultdict
 from itertools import combinations
-from utils.text_processing_utils import split_string_by_multi_markers, clean_str, is_float_regex
 from prompt import GRAPH_FIELD_SEP, PROMPTS
-from utils.file_and_instance_utils import write_jsonl, write_jsonl_force
+from utils.file_utils import write_jsonl_force
+from utils.extraction_utils import clean_str, is_float_regex
 # Setup simple logging
 logger = logging.getLogger(__name__)
 ENCODER = None

@@ -30,12 +30,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 from utils.cluster_utils import Hierarchical_Clustering
-from utils.file_and_instance_utils import write_jsonl, InstanceManager
+from utils.file_utils import write_jsonl
 from utils.database_utils_supabase import create_db_tables, insert_data_to_supabase
 from utils.database_utils_mysql import create_db_table_mysql_config, insert_data_to_mysql_config
 from utils.database_utils_qdrant import build_vector_search
-from utils.llm_manager import create_llm_manager, create_pickleable_embedding_function
-from utils.embedding_manager import get_embedding_manager
+from utils.llm_manager import create_llm_manager
+from utils.embedding_manager import get_embedding_manager, create_pickleable_embedding_function
 import requests
 import multiprocessing
 
@@ -222,7 +222,7 @@ def setup_llm_manager(config_path: str):
             return None
     else:
         # Fallback to legacy local setup
-        logger.warning("No API provider found in config, falling back to local InstanceManager setup")
+        logger.warning("No API provider found in config")
         return None
 
 def get_common_rag_res(WORKING_DIR):
@@ -304,37 +304,7 @@ def setup_embedding_function(config_path: str):
         
     except Exception as e:
         logger.error(f"❌ Failed to setup new embedding function: {e}")
-        logger.warning("🔄 Falling back to legacy embedding function...")
-        
-        # Fallback to legacy implementation for backward compatibility
-        embedding_config = None
-        embedding_provider = "local"
-        
-        if 'embedding_conf' in config:
-            embedding_config = config['embedding_conf']
-            embedding_provider = embedding_config.get('api_provider', 'local')
-        elif 'glm' in config:
-            embedding_config = {
-                'api_provider': 'local',
-                'model': config['glm']['model'],
-                'base_url': config['glm']['base_url'],
-                'api_key': config['glm']['model']
-            }
-        else:
-            embedding_config = {
-                'api_provider': 'local',
-                'model': 'bge_m3',
-                'base_url': 'http://localhost:8000/v1',
-                'api_key': 'bge_m3'
-            }
-        
-        EMBEDDING_CONFIG = embedding_config
-        embedding_func = create_pickleable_embedding_function(embedding_config)
-        
-        logger.info(f"Initialized {embedding_provider.upper()} embedding function (legacy)")
-        logger.info(f"Embedding model: {embedding_config['model']}")
-        
-        return embedding_func
+
 
 def truncate_text(text, max_tokens=4096):
     """Truncate text to max tokens."""
@@ -409,8 +379,7 @@ def hierarchical_clustering(global_config, config_path: str):
         global_config['use_llm_func'] = llm_manager.generate_text
         logger.info("Using API-based LLM for clustering")
     else:
-        # Fallback to legacy InstanceManager setup
-        logger.info("Using legacy InstanceManager for clustering")
+        logger.warning("No API found for clustering")
     
     # Perform clustering
     hierarchical_cluster = Hierarchical_Clustering()

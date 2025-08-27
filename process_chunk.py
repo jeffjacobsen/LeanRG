@@ -21,10 +21,10 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from utils.extraction_utils import (
     split_string_by_multi_markers, _handle_single_entity_extraction,
-    _handle_single_relationship_extraction, clean_str, pack_user_ass_to_openai_messages
+    _handle_single_relationship_extraction, pack_user_ass_to_openai_messages
 )
 from utils.llm_manager import create_llm_manager
-from utils.file_and_instance_utils import write_jsonl
+from utils.file_utils import write_jsonl
 from prompt import PROMPTS
 
 # Setup logging

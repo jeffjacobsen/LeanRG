@@ -319,3 +319,105 @@ def create_embedding_function(config: Dict[str, Any]):
             return manager.embed_texts(texts)
     
     return embedding_function
+
+class PickleableEmbeddingFunction:
+    """Pickleable embedding function for multiprocessing (build_graph.py style)."""
+    
+    def __init__(self, config: Dict[str, Any]):
+        # Store config for recreation in worker processes
+        self.config = config
+        self.provider = config.get('provider', 'openai')
+        # Don't store the client - recreate in __call__
+        
+    def __call__(self, texts) -> np.ndarray:
+        """Generate embeddings (creates client per call for multiprocessing safety)."""
+        if self.provider == 'fastembed':
+            return self._generate_fastembed_embeddings(texts)
+        else:
+            return self._generate_openai_embeddings(texts)
+    
+    def _generate_fastembed_embeddings(self, texts) -> np.ndarray:
+        """Generate embeddings using FastEmbed."""
+        try:
+            from fastembed import TextEmbedding
+            import numpy as np
+            
+            # Handle single string input
+            if isinstance(texts, str):
+                texts = [texts]
+            
+            # Map model names
+            model_name = self.config.get('model', 'bge-base')
+            model_mapping = {
+                'bge-small': 'BAAI/bge-small-en-v1.5',
+                'bge-base': 'BAAI/bge-base-en-v1.5', 
+                'bge-large': 'BAAI/bge-large-en-v1.5',
+                'all-minilm': 'sentence-transformers/all-MiniLM-L6-v2'
+            }
+            
+            full_model_name = model_mapping.get(model_name, model_name)
+            device = self.config.get('device', 'cpu')
+            
+            # Create FastEmbed model (will be recreated in each worker)
+            embedding_model = TextEmbedding(model_name=full_model_name, providers=["CPUExecutionProvider"] if device == "cpu" else None)
+            
+            # Generate embeddings
+            embeddings = list(embedding_model.embed(texts))
+            return np.array(embeddings)
+            
+        except Exception as e:
+            raise Exception(f"FastEmbed embedding generation failed: {e}")
+    
+    def _generate_openai_embeddings(self, texts) -> np.ndarray:
+        """Generate embeddings using OpenAI API."""
+        from openai import OpenAI
+        import time
+        
+        # Recreate client in worker process
+        client = OpenAI(
+            api_key=self.config['api_key'],
+            base_url=self.config['base_url'],
+            timeout=self.config.get('timeout', 240)
+        )
+        
+        model = self.config['model']
+        provider = self.config.get('api_provider', 'local')
+        max_retries = self.config.get('max_retries', 3)
+        
+        # Provider-specific batch size
+        batch_size = EmbeddingManager.PROVIDER_BATCH_SIZES.get(provider, 64)
+        
+        # Handle single string input
+        if isinstance(texts, str):
+            texts = [texts]
+        
+        for attempt in range(max_retries):
+            try:
+                all_embeddings = []
+                
+                # Process in batches
+                for i in range(0, len(texts), batch_size):
+                    batch_texts = texts[i:i + batch_size]
+                    
+                    embedding_response = client.embeddings.create(
+                        input=batch_texts,
+                        model=model,
+                    )
+                    
+                    batch_embeddings = [d.embedding for d in embedding_response.data]
+                    all_embeddings.extend(batch_embeddings)
+                
+                return np.array(all_embeddings)
+                
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise
+                time.sleep(2 ** attempt)
+        
+        raise Exception("Failed to generate embeddings after all retries")
+
+
+
+def create_pickleable_embedding_function(config: Dict[str, Any]) -> PickleableEmbeddingFunction:
+    """Factory function to create pickleable embedding function for multiprocessing."""
+    return PickleableEmbeddingFunction(config)

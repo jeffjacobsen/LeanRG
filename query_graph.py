@@ -9,16 +9,12 @@ import os
 os.environ['PYDANTIC_DISABLE_PLUGINS'] = '1'
 
 import argparse
-from collections import Counter, defaultdict
-from dataclasses import field
-import json
-import os
 import time
 import logging
 import numpy as np
-from openai import OpenAI
 import tiktoken
-from tqdm import tqdm
+import yaml
+
 # Setup logging first
 logging.basicConfig(
     level=logging.INFO,
@@ -26,29 +22,26 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-import yaml
-from utils.file_and_instance_utils import InstanceManager
+
 # Import LeanRAG algorithms from modernized database utilities
 from utils.database_utils_supabase import (
-    find_tree_root_supabase, find_path_supabase, search_nodes_link_supabase,
-    search_nodes_supabase, search_community_supabase, get_text_units_supabase, search_chunks_supabase,
+    find_tree_root_supabase, search_community_supabase, get_text_units_supabase,
     search_multiple_relationships_supabase
 )
 from utils.database_utils_mysql import (
-    find_tree_root_mysql, search_nodes_link_mysql, search_nodes_mysql,
+    find_tree_root_mysql, search_nodes_link_mysql,
     search_community_mysql, get_text_units_mysql
 )
 from utils.database_utils_qdrant import search_vector_search_qdrant
-from utils.llm_manager import create_sync_llm_manager, create_embedding_manager
+from utils.llm_manager import create_sync_llm_manager
 from utils.embedding_manager import get_embedding_manager
 
 # Database backend availability flags
 SUPABASE_AVAILABLE = True  # We have implemented these functions
 QDRANT_AVAILABLE = True    # We have implemented these functions
-from prompt import GRAPH_FIELD_SEP, PROMPTS
+from prompt import PROMPTS
 from itertools import combinations
 import sys
-from pathlib import Path
 
 def load_config(config_path: str) -> dict:
     """Load configuration from YAML file."""
@@ -62,21 +55,16 @@ def load_config(config_path: str) -> dict:
         logger.error(f"Error parsing YAML file: {e}")
         raise
 
-# Removed duplicate APILLMManager - now using shared one from utils.llm_manager
-
-# Removed duplicate APIEmbeddingManager - now using shared one from utils.llm_manager
-
 def setup_llm_manager(config_path: str):
     """Setup LLM manager based on configuration."""
     config = load_config(config_path)
     
-    # Check if using API provider or local setup
-    if 'llm_conf' in config and config['llm_conf'].get('api_provider') in ['lambda', 'openai', 'groq', 'cerebras', 'local']:
+    # Check if using API provider
+    if 'llm_conf' in config and config['llm_conf'].get('api_provider') in ['lambda', 'openai', 'groq', 'cerebras']:
         llm_config = config['llm_conf']
         return create_sync_llm_manager(llm_config)
     else:
-        # Fallback to legacy local setup
-        logger.warning("No API provider found in config, falling back to local InstanceManager setup")
+        logger.error("❌ No LLM API provider found in config")
         return None
 
 def setup_embedding_manager(config_path: str):
@@ -105,28 +93,8 @@ def setup_embedding_manager(config_path: str):
         
     except Exception as e:
         logger.error(f"❌ Failed to setup new embedding function: {e}")
-        logger.warning("🔄 Falling back to legacy embedding function...")
-        
-        # Fallback to legacy implementation
-        if 'embedding_conf' in config:
-            embedding_config = config['embedding_conf']
-            return create_embedding_manager(embedding_config)
-        elif 'glm' in config:
-            embedding_config = {
-                'api_provider': 'local',
-                'model': config['glm']['model'],
-                'base_url': config['glm']['base_url'],
-                'api_key': config['glm']['model']
-            }
-            return create_embedding_manager(embedding_config)
-        else:
-            embedding_config = {
-                'api_provider': 'local',
-                'model': 'bge_m3',
-                'base_url': 'http://localhost:8000/v1',
-                'api_key': 'bge_m3'
-            }
-            return create_embedding_manager(embedding_config)
+        return None
+
 
 # Tokenizer for text truncation
 tokenizer = tiktoken.get_encoding("cl100k_base")
