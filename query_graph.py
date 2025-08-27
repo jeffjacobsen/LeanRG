@@ -17,7 +17,6 @@ import time
 import logging
 import numpy as np
 from openai import OpenAI
-import pymysql
 import tiktoken
 from tqdm import tqdm
 # Setup logging first
@@ -151,6 +150,11 @@ def get_reasoning_chain(global_config, entities_set):
     # Determine database backend
     database_backend = global_config.get('database', {}).get('backend', 'supabase')
     
+    # Debug logging
+    # logger.info(f"🔍 get_reasoning_chain called with {len(entities_set)} entities: {entities_set}")
+    # logger.info(f"🔧 Database backend: {database_backend}")
+    # logger.info(f"📊 Generated {len(maybe_edges)} entity pairs to process")
+    
     # Collect all entity pairs from all reasoning paths
     all_entity_pairs = []
     
@@ -277,7 +281,6 @@ def query_graph(global_config, db, query):
     b = time.time()
     level_mode = global_config['level_mode']
     topk = global_config['topk']
-    chunks_file = global_config["chunks_file"]
     
     # Get query embedding and search for relevant entities
     query_embedding = embedding_func([query])
@@ -340,14 +343,12 @@ text_units:
 def main():
     """Main function with argument parsing and API setup."""
     parser = argparse.ArgumentParser(description="Query knowledge graph with API support")
+    parser.add_argument("dataset_prefix", type=str,
+                       help="Dataset prefix (e.g., 'cs', 'legal', 'agriculture')")
     parser.add_argument("-q", "--query", type=str, required=True,
                        help="Query string")
-    parser.add_argument("-w", "--working-dir", type=str, default="data/mix",
-                       help="Working directory containing the knowledge graph")
     parser.add_argument("-c", "--config", type=str, default="config.yaml",
-                       help="Configuration file path")
-    parser.add_argument("--chunks-file", type=str, default="datasets/chunks/mix_chunk.json",
-                       help="Path to chunks file")
+                       help="Configuration file path (default: config.yaml)")
     parser.add_argument("--topk", type=int, default=10,
                        help="Number of top entities to retrieve")
     parser.add_argument("--level-mode", type=int, default=2,
@@ -355,17 +356,16 @@ def main():
     
     args = parser.parse_args()
     
+    # Construct working directory from dataset prefix
+    working_dir = f"data/{args.dataset_prefix}"
+    
     # Validate paths
-    if not os.path.exists(args.working_dir):
-        logger.error(f"Working directory not found: {args.working_dir}")
+    if not os.path.exists(working_dir):
+        logger.error(f"Working directory not found: {working_dir}")
         sys.exit(1)
     
     if not os.path.exists(args.config):
         logger.error(f"Configuration file not found: {args.config}")
-        sys.exit(1)
-    
-    if not os.path.exists(args.chunks_file):
-        logger.error(f"Chunks file not found: {args.chunks_file}")
         sys.exit(1)
     
     # Setup API managers
@@ -381,8 +381,7 @@ def main():
     
     # Setup global configuration
     global_config = {
-        'working_dir': args.working_dir,
-        'chunks_file': args.chunks_file,
+        'working_dir': working_dir,
         'embeddings_func': embedding_manager,
         'use_llm_func': llm_manager.generate_text,
         'topk': args.topk,
@@ -403,7 +402,7 @@ def main():
                 sys.exit(1)
         
         logger.info(f"Querying: {args.query}")
-        logger.info(f"Working directory: {args.working_dir}")
+        logger.info(f"Working directory: {working_dir}")
         logger.info(f"Top-k: {args.topk}")
         logger.info(f"Level mode: {args.level_mode}")
         logger.info(f"Database backend: {database_backend}")

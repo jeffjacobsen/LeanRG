@@ -349,11 +349,6 @@ async def main():
         help="Dataset prefix (e.g., 'cs', 'legal', 'agriculture')"
     )
     parser.add_argument(
-        "--config", "-c",
-        default="config.yaml",
-        help="Path to configuration file"
-    )
-    parser.add_argument(
         "--working-dir", "-w",
         default="data",
         help="Working directory (default: data)"
@@ -362,13 +357,9 @@ async def main():
     args = parser.parse_args()
     
     # Load configuration
-    try:
-        config = load_config(args.config)
-    except Exception as e:
-        logger.error(f"Failed to load config: {e}")
-        return 1
-    
-    # Extract configuration sections
+
+    config = load_config("config.yaml")
+        # Extract configuration sections
     llm_conf = config.get("llm_conf", {})
     task_conf = config.get("graphextraction_conf", config.get("task_conf", {}))  # Support both new and legacy format
     

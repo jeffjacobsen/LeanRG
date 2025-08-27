@@ -463,15 +463,15 @@ if __name__ == "__main__":
         pass
     
     parser = argparse.ArgumentParser(description="Build hierarchical knowledge graph with API support")
-    parser.add_argument("-p", "--path", type=str, required=True, 
-                       help="Working directory containing entity.jsonl and relation.jsonl")
+    parser.add_argument("dataset_prefix", type=str, 
+                       help="Dataset prefix (e.g., 'cs', 'legal', 'agriculture')")
     parser.add_argument("-c", "--config", type=str, default="config.yaml",
-                       help="Configuration file path")
+                       help="Configuration file path (default: config.yaml)")
     parser.add_argument("-w", "--workers", type=int, default=8,
                        help="Number of workers for processing")
     args = parser.parse_args()
 
-    WORKING_DIR = args.path
+    WORKING_DIR = f"data/{args.dataset_prefix}"
     CONFIG_PATH = args.config
     
     # Validate input files

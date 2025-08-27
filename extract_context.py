@@ -83,12 +83,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--query", action="store_true")
     parser.add_argument("-i", "--input_dir", type=str, default="datasets/ultradomain")
-    parser.add_argument(
-        "-o", "--output_dir", type=str, default="datasets/unique_contexts"
-    )
-    parser.add_argument(
-        "-q", "--query_dir", type=str, default="datasets/query"
-    )
+    parser.add_argument("-o", "--output_dir", type=str, default="datasets/unique_contexts")
+    parser.add_argument("-q", "--query_dir", type=str, default="datasets/query")
 
     args = parser.parse_args()
 

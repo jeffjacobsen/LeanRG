@@ -271,11 +271,11 @@ async def main():
         epilog="""
 Examples:
   python deal_triple.py cs
-  python GraphExtraction/deal_triple.py legal -c config.yaml
-  python GraphExtraction/deal_triple.py agriculture --threshold 75 --no-summarize
+  python deal_triple.py legal --threshold 75
+  python deal_triple.py agriculture --no-summarize
 
 Input/Output Structure:
-  Working directory: {dataset_prefix}-data/
+  Working directory: data/{dataset_prefix}/
   Input files: entity-extract.jsonl, relation-extract.jsonl
   Output files: entity.jsonl, relation.jsonl
         """
@@ -289,16 +289,7 @@ Input/Output Structure:
     parser.add_argument(
         "--config", "-c",
         default="config.yaml",
-        help="Path to configuration file"
-    )
-    parser.add_argument(
-        "--output-dir", "-o",
-        default="ge_data",
-        help="Base output directory (default: ge_data)"
-    )
-    parser.add_argument(
-        "--working-dir", "-w",
-        help="Complete working directory path (overrides --output-dir)"
+        help="Configuration file path (default: config.yaml)"
     )
 
     parser.add_argument(
@@ -317,10 +308,7 @@ Input/Output Structure:
     
     args = parser.parse_args()
     
-    if args.working_dir:
-        working_dir = args.working_dir
-    else:
-        working_dir = f"{args.output_dir}/{args.dataset_prefix}"
+    working_dir = f"data/{args.dataset_prefix}"
     
     # Validate working directory
     if not os.path.exists(working_dir):

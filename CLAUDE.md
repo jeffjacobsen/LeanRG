@@ -205,16 +205,12 @@ python file_chunk.py
 Splits documents into 1024-token chunks with 128-token sliding windows.
 
 ### 2. Knowledge Graph Extraction
-
-> **Choosing the Right Method**: Use `python extraction_benchmark.py` to get recommendations for your document type, or see `EXTRACTION_METHOD_GUIDE.md` for detailed guidance.
-
-**GraphRAG (LLM-based extraction) - Primary Method**
 ```bash
 # Extract entities and relations (creates data/{prefix}/ directory)
-python process-chunk.py {dataset_prefix} -c config.yaml
+python process_chunk.py {dataset_prefix}
 
 # Process and deduplicate results (reads and writes to same directory)
-python deal_triple.py --input data/{dataset_prefix} --output data/{dataset_prefix} -c config.yaml
+python deal_triple.py {dataset_prefix}
 ```
 
 **Note**: All scripts now use API-compatible versions only. Local LLM support has been removed.
@@ -223,7 +219,7 @@ python deal_triple.py --input data/{dataset_prefix} --output data/{dataset_prefi
 
 ```bash
 # Build hierarchical knowledge graph 
-python build_graph.py -p data/output_dir -c config.yaml
+python build_graph.py {dataset_prefix}
 ```
 Builds hierarchical knowledge graph with semantic clustering and aggregation.
 
@@ -231,10 +227,10 @@ Builds hierarchical knowledge graph with semantic clustering and aggregation.
 
 ```bash
 # Query the knowledge graph
-python query_graph.py -q "Your query here" -w data/output_dir -c config.yaml --topk 10
+python query_graph.py {dataset_prefix} -q "Your query here" --topk 10
 
 # Example query
-python query_graph.py -q "What is machine learning?" -w data/cs -c config.yaml --topk 5
+python query_graph.py cs -q "What is machine learning?" --topk 5
 ```
 Performs hierarchical retrieval starting from relevant entities and traversing up the knowledge graph.
 
@@ -372,14 +368,20 @@ docker compose restart qdrant
 ```
 file_chunk.py → chunks.json (stored in data/{prefix})
         ↓
-process-chunk.py + deal_triple.py → data/{prefix}/entity.jsonl, relation.jsonl  
+process_chunk.py + deal_triple.py → data/{prefix}/entity.jsonl, relation.jsonl  
         ↓
-build_graph.py → Database storage (ChromaDB+MySQL)
+build_graph.py → Database storage (MySQL+Qdrant)
         ↓
 query_graph.py → final answers
 ```
 
 ## Recent Changes
+
+### Command Simplification  
+- **Simplified arguments**: All scripts now use `{dataset_prefix}` as the main required argument
+- **Default directories**: Automatically use `data/{dataset_prefix}` working directory
+- **Default config**: All scripts default to `config.yaml` (no `-c` flag needed)
+- **Streamlined workflow**: Clean, consistent command structure across all scripts
 
 ### Configuration Consolidation
 - **Single config file**: All settings now use `config.yaml` in root directory 

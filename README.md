@@ -109,7 +109,16 @@ python tests/cost_estimator.py --dataset cs --sample-size 5
 
 ## 💻 Usage Workflow
 
-Here’s a typical pipeline flow:
+### **Quick Start Pipeline**
+```bash
+# Process your dataset (replace 'cs' with your dataset name)
+python process_chunk.py cs       # Extract entities and relations
+python deal_triple.py cs         # Deduplicate and clean
+python build_graph.py cs         # Build knowledge graph
+python query_graph.py cs -q "Your question here"  # Query the graph
+```
+
+Here's the detailed pipeline flow:
 
 ### **Step 1: Document Chunking**
 In `file_chunk.py`, split the document into chunks:
@@ -141,8 +150,8 @@ LeanRAG uses GraphRAG for knowledge extraction, which relies on LLM capability t
 
 3. Run extraction:
    ```bash
-   python process-chunk.py
-   python deal_triple.py --input data/[prefix] --output data/[prefix]
+   python process_chunk.py {dataset_prefix}
+   python deal_triple.py {dataset_prefix}
    ```
 
 **Outputs include:**
@@ -159,7 +168,7 @@ LeanRAG uses GraphRAG for knowledge extraction, which relies on LLM capability t
 
 ```bash
 # Build hierarchical knowledge graph with semantic clustering
-python build_graph.py -p data/output_dir -c config.yaml -w 2
+python build_graph.py {dataset_prefix}
 ```
 
 This step:
@@ -173,10 +182,10 @@ This step:
 
 ```bash
 # Query the knowledge graph with hierarchical retrieval
-python query_graph.py -q "Your query here" -w data/output_dir -c config.yaml --chunks-file data/output_dir/chunks.json --topk 10
+python query_graph.py {dataset_prefix} -q "Your query here" --topk 10
 
 # Example query
-python query_graph.py -q "What is machine learning?" -w data/cs -c config.yaml --chunks-file datasets/chunks/cs_chunk.json --topk 5
+python query_graph.py cs -q "What is machine learning?" --topk 5
 ```
 
 This performs:

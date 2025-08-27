@@ -337,7 +337,7 @@ def find_tree_root_mysql(entity_name: str, working_dir: str, config: dict) -> Li
         return [entity_name]
 
 def search_nodes_link_mysql(entity1: str, entity2: str, working_dir: str, config: dict) -> Optional[Tuple[str, str, str]]:
-    """Search for relationship between two entities using MySQL."""
+    """Search for relationship between two entities using MySQL with fuzzy matching."""
     mysql_manager = get_mysql_manager(config)
     db_name = os.path.basename(working_dir)
     
@@ -352,6 +352,25 @@ def search_nodes_link_mysql(entity1: str, entity2: str, working_dir: str, config
         if not result:
             # Try reverse match
             cursor.execute(f"SELECT * FROM `{db_name}`.relations WHERE src_tgt = %s AND tgt_src = %s", (entity2, entity1))
+            result = cursor.fetchone()
+        
+        if not result:
+            # Try fuzzy matching - look for relationships where either entity name is contained in the stored names
+            cursor.execute(f"""
+                SELECT * FROM `{db_name}`.relations 
+                WHERE (src_tgt LIKE %s AND tgt_src LIKE %s) 
+                   OR (src_tgt LIKE %s AND tgt_src LIKE %s)
+                LIMIT 1
+            """, (f'%{entity1}%', f'%{entity2}%', f'%{entity2}%', f'%{entity1}%'))
+            result = cursor.fetchone()
+        
+        if not result:
+            # Try even broader fuzzy matching - any relationship involving either entity
+            cursor.execute(f"""
+                SELECT * FROM `{db_name}`.relations 
+                WHERE src_tgt LIKE %s OR tgt_src LIKE %s OR src_tgt LIKE %s OR tgt_src LIKE %s
+                LIMIT 1
+            """, (f'%{entity1}%', f'%{entity1}%', f'%{entity2}%', f'%{entity2}%'))
             result = cursor.fetchone()
         
         cursor.close()
